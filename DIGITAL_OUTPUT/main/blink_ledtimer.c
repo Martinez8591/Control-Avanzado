@@ -2,16 +2,20 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/timers.h"
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 #include "esp_err.h"
 
 #define LED 2
 static uint8_t led_level = 0;
-static uint8_t count = 0;
 static const char *TAG = "ALVARO";
 
-// Inicializador pin digital
+TimerHandle_t xTimers;
+const int timer_interval = 2000;
+const int timerId = 1;
+
+// Inicializador pin digital 
 esp_err_t init_led(void){
 
     ESP_LOGI(TAG, "Inicializando LED");
@@ -48,6 +52,39 @@ esp_err_t blink_led(void)
     return err;
 }
 
+// Regreso Timer
+void vTimerCallback(TimerHandle_t pxTimer)
+{
+    ESP_LOGI(TAG, "TIMER ALCANZADO");
+    ESP_ERROR_CHECK(blink_led());
+}
+
+// Configuración del Timer
+esp_err_t set_timer(void){
+
+    ESP_LOGI(TAG, "Configurando timer de software");
+
+    xTimers = xTimerCreate(
+        "Timer_LED",
+        pdMS_TO_TICKS(timer_interval),
+        pdTRUE,
+        (void *)timerId,
+        vTimerCallback
+    );
+
+    if (xTimers == NULL){
+        ESP_LOGE(TAG, "Error al crear el timer");
+        return ESP_FAIL;
+    }
+
+    if (xTimerStart(xTimers, 0) != pdPASS){
+        ESP_LOGE(TAG, "Error al iniciar el timer");
+        return ESP_FAIL;
+    }
+
+    return ESP_OK;
+}
+
 void app_main(void){
     
     //ESP_LOG_ERROR -- SOLO VAN A VER LOGS DE ERROR
@@ -61,10 +98,10 @@ void app_main(void){
     ESP_LOGI(TAG, "Aplicación iniciada");
 
     ESP_ERROR_CHECK(init_led());
+    ESP_ERROR_CHECK(set_timer());
 
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        ESP_ERROR_CHECK(blink_led());
+        vTaskDelay(pdMS_TO_TICKS(10000));
     }
 }
