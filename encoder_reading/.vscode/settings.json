@@ -12,8 +12,7 @@
   "clangd.arguments": [
     "--background-index",
     "--query-driver=**",
-    "--compile-commands-dir=c:\\Users\\Alvar\\Desktop\\Control\\DIGITAL_OUTPUT\\build"
+    "--compile-commands-dir=c:\\Users\\Alvar\\Desktop\\Control\\encoder_reading\\build"
   ],
-  "idf.flashType": "UART",
-  "idf.monitorPort": "COM3"
+  "idf.flashType": "UART"
 }
